@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Absensi HP</title>
+    <!-- Library untuk scan QR/Barcode via kamera HP -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; text-align: center; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #reader { width: 100%; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Absensi Karyawan</h2>
+    
+    <!-- Area Kamera untuk Scan Barcode/QR -->
+    <div id="reader"></div>
+    
+    <form id="absensiForm">
+        <label>ID / Barcode:</label>
+        <input type="text" id="idKaryawan" readonly placeholder="Hasil scan akan muncul di sini">
+
+        <label>Nama Lengkap:</label>
+        <input type="text" id="namaKaryawan" required placeholder="Masukkan Nama Anda">
+
+        <label>Status Kehadiran:</label>
+        <select id="status">
+            <option value="Hadir">Hadir</option>
+            <option value="Izin">Izin</option>
+            <option value="Sakit">Sakit</option>
+        </select>
+
+        <button type="submit">Kirim Absen</button>
+    </form>
+    <p id="notif" style="font-weight: bold; margin-top: 10px;"></p>
+</div>
+
+<script>
+    // Inisialisasi Kamera Scanner QR/Barcode
+    function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('idKaryawan').value = decodedText;
+        html5QrCode.stop(); // Hentikan kamera setelah berhasil scan
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+        { facingMode: "environment" }, // Menggunakan kamera belakang HP
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess
+    ).catch(err => {
+        console.log("Gagal membuka kamera: ", err);
+    });
+
+    // Kirim Data ke Google Sheets
+    document.getElementById('absensiForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const scriptURL = 'MASUKKAN_WEB_APP_URL_GOOGLE_APPS_SCRIPT_DI_SINI'; // Ganti dengan URL dari Langkah 2
+        
+        const data = {
+            nama: document.getElementById('namaKaryawan').value,
+            id: document.getElementById('idKaryawan').value,
+            status: document.getElementById('status').value
+        };
+
+        document.getElementById('notif').innerText = "Mengirim data...";
+
+        fetchhttps://script.google.com/u/0/home/projects/1IKyevqPVfsEx03ACBeTUZgNJL87i0fKTEdbvW5qYmpVqJjEfMRmIYlL7/edit, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            document.getElementById('notif').style.color = "green";
+            document.getElementById('notif').innerText = "Absen Berhasil Terkirim!";
+            document.getElementById('absensiForm').reset();
+        })
+        .catch(error => {
+            document.getElementById('notif').style.color = "red";
+            document.getElementById('notif').innerText = "Gagal mengirim absen!";
+        });
+    });
+</script>
+
+</body>
+</html>
